@@ -3,13 +3,19 @@ const ingredientRouter = express.Router();
 
 const pool = require("../db");
 
+const uniqid = require("uniqid");
+
 // get all ingredients
 ingredientRouter.get("/", async (req, res) => {
   try {
-    const ingredients = await pool.query(
+    let ingredients = await pool.query(
       "SELECT * FROM ingredients WHERE user_id = 1"
     );
-    res.json(ingredients.rows);
+    ingredients = ingredients.rows.map(ingredient => ({
+      ...ingredient,
+      dragId: uniqid()
+    }));
+    res.json(ingredients);
   } catch (err) {
     console.log(err.message);
     res.status(400).end();

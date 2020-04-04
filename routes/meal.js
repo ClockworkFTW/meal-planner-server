@@ -4,6 +4,8 @@ const mealRoute = express.Router();
 const pool = require("../db");
 const format = require("pg-format");
 
+const uniqid = require("uniqid");
+
 const JOIN_MEAL_INGREDIENTS =
   "SELECT id, name, category, calories, carbs, protein, fat, serving_size, serving_unit, quantity FROM ingredients INNER JOIN meal_ingredients ON ingredients.id = meal_ingredients.ingredient_id WHERE meal_ingredients.meal_id = $1";
 
@@ -15,8 +17,14 @@ mealRoute.get("/", async (req, res) => {
     meals = meals.rows;
 
     meals = meals.map(async meal => {
-      const ingredients = await pool.query(JOIN_MEAL_INGREDIENTS, [meal.id]);
-      return { ...meal, ingredients: ingredients.rows };
+      let ingredients = await pool.query(JOIN_MEAL_INGREDIENTS, [meal.id]);
+
+      ingredients = ingredients.rows.map(ingredient => ({
+        ...ingredient,
+        dragId: uniqid()
+      }));
+
+      return { ...meal, ingredients };
     });
 
     meals = await Promise.all(meals);
