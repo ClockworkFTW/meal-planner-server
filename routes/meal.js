@@ -24,7 +24,7 @@ mealRoute.get("/", async (req, res) => {
         dragId: uniqid()
       }));
 
-      return { ...meal, ingredients };
+      return { ...meal, dropId: uniqid(), ingredients };
     });
 
     meals = await Promise.all(meals);
