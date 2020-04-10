@@ -1,0 +1,42 @@
+const express = require("express");
+const mealIngredientRoute = express.Router();
+
+const pool = require("../db");
+
+const uniqid = require("uniqid");
+
+// add ingredient
+mealIngredientRoute.post("/:mealId/:ingredientId", async (req, res) => {
+  try {
+    const { mealId, ingredientId } = req.params;
+
+    await pool.query(
+      "INSERT INTO meal_ingredients (meal_id, ingredient_id, quantity) VALUES($1, $2, $3)",
+      [mealId, ingredientId, 1]
+    );
+
+    res.status(200).end();
+  } catch (err) {
+    console.log(err.message);
+    res.status(400).end();
+  }
+});
+
+// remove ingredient
+mealIngredientRoute.delete("/:mealId/:ingredientId", async (req, res) => {
+  try {
+    const { mealId, ingredientId } = req.params;
+
+    await pool.query(
+      "DELETE FROM meal_ingredients WHERE (meal_id = $1 AND ingredient_id = $2)",
+      [mealId, ingredientId]
+    );
+
+    res.status(200).end();
+  } catch (err) {
+    console.log(err.message);
+    res.status(400).end();
+  }
+});
+
+module.exports = mealIngredientRoute;

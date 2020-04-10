@@ -15,6 +15,9 @@ app.use("/ingredients", ingredientRouter);
 const mealRouter = require("./routes/meal");
 app.use("/meals", mealRouter);
 
+const mealIngredientRouter = require("./routes/meal_ingredient");
+app.use("/meal_ingredients", mealIngredientRouter);
+
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
