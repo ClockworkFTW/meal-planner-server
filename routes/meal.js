@@ -55,34 +55,17 @@ mealRoute.get("/:id", async (req, res) => {
   }
 });
 
-// create and meal
+// create a meal
 mealRoute.post("/", async (req, res) => {
   try {
-    const { name, time, difficulty, ingredients } = req.body;
+    const { user, name, time } = req.body;
 
     let newMeal = await pool.query(
-      "INSERT INTO meal (name, time, difficulty) VALUES($1, $2, $3) RETURNING *",
-      [name, time, difficulty]
+      "INSERT INTO meals (user_id, name, time) VALUES($1, $2, $3) RETURNING *",
+      [user, name, time]
     );
 
-    newMeal = newMeal.rows[0];
-
-    const mealIngredients = ingredients.map(ingredient => [
-      newMeal.id,
-      ingredient.id,
-      ingredient.quantity
-    ]);
-
-    let INSERT_MEAL_INGREDIENTS = format(
-      "INSERT INTO meal_ingredients (meal_id, ingredient_id, quantity) VALUES %L",
-      mealIngredients
-    );
-
-    await pool.query(INSERT_MEAL_INGREDIENTS);
-
-    const ing = await pool.query(JOIN_MEAL_INGREDIENTS, [newMeal.id]);
-
-    newMeal = { ...newMeal, ingredients: ing.rows };
+    newMeal = { dropId: uniqid(), ...newMeal.rows[0], ingredients: [] };
 
     res.json(newMeal);
   } catch (err) {
@@ -95,10 +78,10 @@ mealRoute.post("/", async (req, res) => {
 mealRoute.put("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, time, difficulty, steps, flavors, ingredients } = req.body;
+    const { name, time } = req.body;
     const updateMeal = await pool.query(
-      "UPDATE meal SET name = $1, time = $2, difficulty = $3, steps = $4, flavors = $5, ingredients = $6 WHERE id = $7 RETURNING *",
-      [name, time, difficulty, steps, flavors, ingredients, id]
+      "UPDATE meal SET name = $1, time = $2 WHERE id = $3 RETURNING *",
+      [name, time, id]
     );
     res.json(updateMeal.rows[0]);
   } catch (err) {
@@ -111,7 +94,7 @@ mealRoute.put("/:id", async (req, res) => {
 mealRoute.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    await pool.query("DELETE FROM meal WHERE id = $1", [id]);
+    await pool.query("DELETE FROM meals WHERE id = $1", [id]);
     res.status(200).end();
   } catch (err) {
     console.log(err.message);
