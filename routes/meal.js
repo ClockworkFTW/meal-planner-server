@@ -58,11 +58,11 @@ mealRoute.get("/:id", async (req, res) => {
 // create a meal
 mealRoute.post("/", async (req, res) => {
   try {
-    const { user, name, time } = req.body;
+    const { user, time } = req.body;
 
     let newMeal = await pool.query(
       "INSERT INTO meals (user_id, name, time) VALUES($1, $2, $3) RETURNING *",
-      [user, name, time]
+      [user, "Name", time]
     );
 
     newMeal = { dropId: uniqid(), ...newMeal.rows[0], ingredients: [] };

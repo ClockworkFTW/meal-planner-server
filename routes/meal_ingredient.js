@@ -39,4 +39,21 @@ mealIngredientRoute.delete("/:mealId/:ingredientId", async (req, res) => {
   }
 });
 
+// update quantity
+mealIngredientRoute.patch("/:mealId/:ingredientId", async (req, res) => {
+  try {
+    const { mealId, ingredientId } = req.params;
+    const { quantity } = req.body;
+
+    await pool.query(
+      "UPDATE meal_ingredients SET quantity = $3 WHERE (meal_id = $1 AND ingredient_id = $2)",
+      [mealId, ingredientId, quantity]
+    );
+
+    res.status(200).end();
+  } catch (err) {
+    console.log(err.message);
+  }
+});
+
 module.exports = mealIngredientRoute;
