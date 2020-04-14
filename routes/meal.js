@@ -75,15 +75,39 @@ mealRoute.post("/", async (req, res) => {
 });
 
 // update an meal
-mealRoute.put("/:id", async (req, res) => {
+mealRoute.patch("/:id", async (req, res) => {
   try {
+    // Get meal
     const { id } = req.params;
-    const { name, time } = req.body;
-    const updateMeal = await pool.query(
-      "UPDATE meal SET name = $1, time = $2 WHERE id = $3 RETURNING *",
+    const meal = await pool.query("SELECT * FROM meals WHERE id = $1", [id]);
+
+    // Set meal name and time
+    let { name, time } = meal.rows[0];
+    name = req.body.name || name;
+    time = req.body.time || time;
+
+    // Update meal
+    let updateMeal = await pool.query(
+      "UPDATE meals SET name = $1, time = $2 WHERE id = $3 RETURNING *",
       [name, time, id]
     );
-    res.json(updateMeal.rows[0]);
+
+    // Set meal ingredients
+    let ingredients = await pool.query(JOIN_MEAL_INGREDIENTS, [id]);
+    ingredients = ingredients.rows.map(ingredient => ({
+      ...ingredient,
+      dragId: uniqid()
+    }));
+
+    // Add dropId and ingredients to meal
+    updateMeal = {
+      dropId: uniqid(),
+      ...updateMeal.rows[0],
+      ingredients
+    };
+
+    // Return updated meal
+    res.json(updateMeal);
   } catch (err) {
     console.log(err.message);
     res.status(400).end();
