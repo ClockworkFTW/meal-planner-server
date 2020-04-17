@@ -6,13 +6,18 @@ const pool = require("../db");
 const uniqid = require("uniqid");
 
 // add ingredient
-mealIngredientRoute.post("/:mealId/:ingredientId", async (req, res) => {
+mealIngredientRoute.post("/", async (req, res) => {
   try {
-    const { mealId, ingredientId } = req.params;
+    const { mealId, ingredientId, position } = req.body;
 
     await pool.query(
-      "INSERT INTO meal_ingredients (meal_id, ingredient_id, quantity) VALUES($1, $2, $3)",
-      [mealId, ingredientId, 1]
+      "UPDATE meal_ingredients SET position = position + 1 WHERE (meal_id = $1 AND position >= $2)",
+      [mealId, position]
+    );
+
+    await pool.query(
+      "INSERT INTO meal_ingredients (meal_id, ingredient_id, quantity, position) VALUES($1, $2, $3, $4)",
+      [mealId, ingredientId, 1, position]
     );
 
     res.status(200).end();
@@ -23,31 +28,41 @@ mealIngredientRoute.post("/:mealId/:ingredientId", async (req, res) => {
 });
 
 // remove ingredient
-mealIngredientRoute.delete("/:mealId/:ingredientId", async (req, res) => {
-  try {
-    const { mealId, ingredientId } = req.params;
+mealIngredientRoute.delete(
+  "/:mealId/:ingredientId/:position",
+  async (req, res) => {
+    try {
+      const { mealId, ingredientId, position } = req.params;
 
-    await pool.query(
-      "DELETE FROM meal_ingredients WHERE (meal_id = $1 AND ingredient_id = $2)",
-      [mealId, ingredientId]
-    );
+      await pool.query(
+        "UPDATE meal_ingredients SET position = position - 1 WHERE (meal_id = $1 AND position >= $2)",
+        [mealId, position]
+      );
 
-    res.status(200).end();
-  } catch (err) {
-    console.log(err.message);
-    res.status(400).end();
+      await pool.query(
+        "DELETE FROM meal_ingredients WHERE (meal_id = $1 AND ingredient_id = $2)",
+        [mealId, ingredientId]
+      );
+
+      res.status(200).end();
+    } catch (err) {
+      console.log(err.message);
+      res.status(400).end();
+    }
   }
-});
+);
 
 // update quantity
 mealIngredientRoute.patch("/:mealId/:ingredientId", async (req, res) => {
   try {
     const { mealId, ingredientId } = req.params;
-    const { quantity } = req.body;
+    const { quantity, position } = req.body;
+
+    console.log(position);
 
     await pool.query(
-      "UPDATE meal_ingredients SET quantity = $3 WHERE (meal_id = $1 AND ingredient_id = $2)",
-      [mealId, ingredientId, quantity]
+      "UPDATE meal_ingredients SET quantity = $3, position = $4 WHERE (meal_id = $1 AND ingredient_id = $2)",
+      [mealId, ingredientId, quantity, position]
     );
 
     res.status(200).end();

@@ -7,7 +7,7 @@ const format = require("pg-format");
 const uniqid = require("uniqid");
 
 const JOIN_MEAL_INGREDIENTS =
-  "SELECT id, name, category, calories, carbs, protein, fat, serving_size, serving_unit, quantity FROM ingredients INNER JOIN meal_ingredients ON ingredients.id = meal_ingredients.ingredient_id WHERE meal_ingredients.meal_id = $1";
+  "SELECT id, name, category, calories, carbs, protein, fat, serving_size, serving_unit, quantity, position FROM ingredients INNER JOIN meal_ingredients ON ingredients.id = meal_ingredients.ingredient_id WHERE meal_ingredients.meal_id = $1";
 
 // get all meals
 mealRoute.get("/", async (req, res) => {
