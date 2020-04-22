@@ -3,8 +3,6 @@ const mealIngredientRoute = express.Router();
 
 const pool = require("../db");
 
-const uniqid = require("uniqid");
-
 // add ingredient
 mealIngredientRoute.post("/", async (req, res) => {
   try {
@@ -56,13 +54,11 @@ mealIngredientRoute.delete(
 mealIngredientRoute.patch("/:mealId/:ingredientId", async (req, res) => {
   try {
     const { mealId, ingredientId } = req.params;
-    const { quantity, position } = req.body;
-
-    console.log(position);
+    const { quantity } = req.body;
 
     await pool.query(
-      "UPDATE meal_ingredients SET quantity = $3, position = $4 WHERE (meal_id = $1 AND ingredient_id = $2)",
-      [mealId, ingredientId, quantity, position]
+      "UPDATE meal_ingredients SET quantity = $3 WHERE (meal_id = $1 AND ingredient_id = $2)",
+      [mealId, ingredientId, quantity]
     );
 
     res.status(200).end();
